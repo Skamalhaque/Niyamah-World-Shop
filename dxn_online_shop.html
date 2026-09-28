@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DXN Online Shop</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:#f7f7f7;color:#222}
+header{background:#7b1113;color:white;padding:14px 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.logo{font-size:22px;font-weight:700}.cart{background:white;color:#7b1113;border:0;padding:10px 15px;border-radius:20px;font-weight:bold}
+.hero{padding:55px 6%;text-align:center;background:linear-gradient(135deg,#fff4e6,#f7d7a8)}
+.hero h1{margin:0 0 10px;font-size:34px}.hero p{margin:8px auto;max-width:650px}
+.container{max-width:1100px;margin:30px auto;padding:0 16px}.tools{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+input,select{padding:12px;border:1px solid #ddd;border-radius:8px;background:white;flex:1;min-width:180px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card{background:white;border-radius:14px;padding:15px;box-shadow:0 3px 12px #00000012}
+.card img{width:100%;height:180px;object-fit:contain;background:#fafafa;border-radius:10px}
+.card h3{margin:12px 0 6px}.price{font-size:19px;font-weight:bold;color:#7b1113}
+.card button,.submit{width:100%;margin-top:10px;padding:12px;border:0;border-radius:8px;background:#7b1113;color:white;font-weight:bold;cursor:pointer}
+.notice{background:#fff3cd;padding:12px;border-radius:8px;margin:15px 0;font-size:14px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:10;padding:20px}
+.box{background:white;max-width:520px;margin:5vh auto;padding:22px;border-radius:14px;max-height:90vh;overflow:auto}
+.close{float:right;border:0;background:none;font-size:25px}.item{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}
+footer{text-align:center;padding:30px;background:#222;color:#fff;margin-top:40px}
+.small{font-size:13px;color:#666}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🛍️ DXN Online Shop</div>
+  <button class="cart" onclick="openCart()">কার্ট (<span id="count">0</span>)</button>
+</header>
+
+<section class="hero">
+  <h1>DXN পণ্য অনলাইন শপ</h1>
+  <p>পণ্য দেখুন, কার্টে যোগ করুন এবং সহজে অর্ডার পাঠান।</p>
+</section>
+
+<main class="container">
+  <div class="notice">
+    <b>নোট:</b> নিচের পণ্যের নাম/দাম উদাহরণ হিসেবে রাখা হয়েছে। আপনার অফিসিয়াল মূল্য তালিকা অনুযায়ী এগুলো পরিবর্তন করুন।
+  </div>
+
+  <div class="tools">
+    <input id="search" placeholder="পণ্য খুঁজুন..." oninput="render()">
+    <select id="category" onchange="render()">
+      <option value="">সব ক্যাটাগরি</option>
+      <option>কফি</option><option>সাপ্লিমেন্ট</option><option>অন্যান্য</option>
+    </select>
+  </div>
+
+  <div id="products" class="grid"></div>
+</main>
+
+<div id="cartModal" class="modal">
+  <div class="box">
+    <button class="close" onclick="closeCart()">×</button>
+    <h2>🛒 আপনার কার্ট</h2>
+    <div id="cartItems"></div>
+    <h3>মোট: ৳<span id="total">0</span></h3>
+
+    <h3>অর্ডারের তথ্য</h3>
+    <input id="name" placeholder="আপনার নাম"><br><br>
+    <input id="phone" placeholder="মোবাইল নম্বর"><br><br>
+    <input id="address" placeholder="সম্পূর্ণ ঠিকানা"><br><br>
+    <button class="submit" onclick="sendOrder()">WhatsApp-এ অর্ডার পাঠান</button>
+    <p class="small">WhatsApp নম্বরটি কোডে আপনার ব্যবসার নম্বর দিয়ে পরিবর্তন করুন।</p>
+  </div>
+</div>
+
+<footer>
+  <b>DXN Online Shop</b><br>
+  WhatsApp: আপনার নম্বর এখানে দিন
+</footer>
+
+<script>
+const products=[
+ {id:1,name:"DXN Lingzhi Coffee 3 in 1",cat:"কফি",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Coffee"},
+ {id:2,name:"DXN Spirulina",cat:"সাপ্লিমেন্ট",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Spirulina"},
+ {id:3,name:"DXN Reishi Gano",cat:"সাপ্লিমেন্ট",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Reishi+Gano"},
+ {id:4,name:"DXN Cordyceps",cat:"সাপ্লিমেন্ট",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Cordyceps"},
+ {id:5,name:"DXN Vita Café",cat:"কফি",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Vita+Cafe"},
+ {id:6,name:"DXN অন্যান্য পণ্য",cat:"অন্যান্য",price:0,img:"https://via.placeholder.com/500x400?text=DXN+Product"}
+];
+
+let cart=[];
+
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const c=document.getElementById("category").value;
+ const list=products.filter(p=>(p.name.toLowerCase().includes(q))&&(!c||p.cat===c));
+ document.getElementById("products").innerHTML=list.map(p=>`
+ <div class="card">
+   <img src="${p.img}" alt="${p.name}">
+   <h3>${p.name}</h3>
+   <div class="price">${p.price?`৳${p.price}`:"মূল্য যোগ করুন"}</div>
+   <button onclick="add(${p.id})">কার্টে যোগ করুন</button>
+ </div>`).join("");
+}
+function add(id){const p=products.find(x=>x.id===id);cart.push(p);updateCount();alert("পণ্যটি কার্টে যোগ হয়েছে।")}
+function updateCount(){document.getElementById("count").textContent=cart.length}
+function openCart(){
+ document.getElementById("cartModal").style.display="block";
+ const box=document.getElementById("cartItems");
+ box.innerHTML=cart.length?cart.map((p,i)=>`<div class="item"><span>${i+1}. ${p.name}</span><b>৳${p.price}</b></div>`).join(""):"কার্ট খালি।";
+ document.getElementById("total").textContent=cart.reduce((s,p)=>s+p.price,0);
+}
+function closeCart(){document.getElementById("cartModal").style.display="none"}
+function sendOrder(){
+ if(!cart.length){alert("আগে একটি পণ্য কার্টে যোগ করুন।");return}
+ const name=document.getElementById("name").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const address=document.getElementById("address").value.trim();
+ if(!name||!phone||!address){alert("নাম, মোবাইল ও ঠিকানা পূরণ করুন।");return}
+ const items=cart.map(p=>"- "+p.name+" (৳"+p.price+")").join("%0A");
+ const total=cart.reduce((s,p)=>s+p.price,0);
+ const message=`নতুন অর্ডার%0A%0Aনাম: ${encodeURIComponent(name)}%0Aমোবাইল: ${encodeURIComponent(phone)}%0Aঠিকানা: ${encodeURIComponent(address)}%0A%0Aপণ্য:%0A${items}%0A%0Aমোট: ৳${total}`;
+ // এখানে 8801XXXXXXXXX-এর জায়গায় আপনার WhatsApp নম্বর দিন
+ window.open("https://wa.me/8801XXXXXXXXX?text="+message,"_blank");
+}
+render();
+</script>
+</body>
+</html>
